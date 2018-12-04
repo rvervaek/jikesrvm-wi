@@ -15,6 +15,7 @@ package org.mmtk.plan.generational;
 import org.mmtk.plan.*;
 import org.mmtk.policy.CopyLocal;
 import org.mmtk.policy.Space;
+import org.mmtk.policy.immix.ObjectHeader;
 import org.mmtk.utility.HeaderByte;
 import org.mmtk.utility.deque.*;
 import org.mmtk.utility.alloc.Allocator;
@@ -86,7 +87,12 @@ import org.vmmagic.unboxed.*;
   @Override
   @Inline
   public Address alloc(int bytes, int align, int offset, int allocator, int site) {
-    if (allocator == Gen.ALLOC_NURSERY) {
+    /*
+     * All allocations of objects with the following allocators, should always be allocated in the nursery first:
+     * - ALLOC_DRAM
+     * - ALLOC_NVM
+     */
+    if (allocator == Gen.ALLOC_NURSERY  || allocator == Gen.ALLOC_DRAM || allocator == Gen.ALLOC_NVM) {
       if (Stats.GATHER_MARK_CONS_STATS) Gen.nurseryCons.inc(bytes);
       return nursery.alloc(bytes, align, offset);
     }
@@ -95,12 +101,20 @@ import org.vmmagic.unboxed.*;
 
   @Override
   @Inline
-  public void postAlloc(ObjectReference ref, ObjectReference typeRef,
-      int bytes, int allocator) {
-    if (allocator != Gen.ALLOC_NURSERY) {
+  public void postAlloc(ObjectReference ref, ObjectReference typeRef, int bytes, int allocator) {
+    /*
+     * We mark the object to indicate that during GC, the object should be copied to DRAM memory.
+     * During GC we will use other allocator identifiers (MATURE_MINOR, MATURE_MAJOR, etc.) and so the allocators on Plan-level are lost.
+     */
+    if (allocator == Gen.ALLOC_DRAM) {
+      ObjectHeader.markAsWriteIntensive(ref);
+    }
+    if (allocator != Gen.ALLOC_NURSERY && allocator != Gen.ALLOC_DRAM && allocator != Gen.ALLOC_NVM) {
       super.postAlloc(ref, typeRef, bytes, allocator);
     }
   }
+
+
 
   @Override
   public Allocator getAllocatorFromSpace(Space space) {

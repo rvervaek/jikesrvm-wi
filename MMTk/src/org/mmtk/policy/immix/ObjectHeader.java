@@ -39,7 +39,10 @@ public class ObjectHeader {
   public static final int PINNED_BIT_NUMBER = ForwardingWord.FORWARDING_BITS;
   public static final byte PINNED_BIT = 1 << PINNED_BIT_NUMBER;
 
-  private static final int STRADDLE_BIT_NUMBER = PINNED_BIT_NUMBER + 1;
+  private static final int WRITE_INTENSITY_BIT_NUMBER = PINNED_BIT_NUMBER + 1;
+  public static final byte WRITE_INTENSITY_BIT = 1 << WRITE_INTENSITY_BIT_NUMBER;
+
+  private static final int STRADDLE_BIT_NUMBER = WRITE_INTENSITY_BIT_NUMBER + 1;
   public static final byte STRADDLE_BIT = 1 << STRADDLE_BIT_NUMBER;
 
   /* mark bits */
@@ -139,6 +142,17 @@ public class ObjectHeader {
   @Inline
   static boolean isPinnedObject(ObjectReference object) {
     return (VM.objectModel.readAvailableByte(object) & PINNED_BIT) == PINNED_BIT;
+  }
+
+  @Inline
+  public static void markAsWriteIntensive(ObjectReference object) {
+    byte old = VM.objectModel.readAvailableByte(object);
+    VM.objectModel.writeAvailableByte(object, (byte) (old | WRITE_INTENSITY_BIT));
+  }
+
+  @Inline
+  public static boolean isWriteIntensiveObject(ObjectReference object) {
+    return (VM.objectModel.readAvailableByte(object) & WRITE_INTENSITY_BIT) == WRITE_INTENSITY_BIT;
   }
 
   /**

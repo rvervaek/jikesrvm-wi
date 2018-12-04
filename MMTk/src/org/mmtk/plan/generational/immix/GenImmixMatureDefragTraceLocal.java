@@ -43,10 +43,18 @@ public final class GenImmixMatureDefragTraceLocal extends GenMatureTraceLocal{
 
   @Override
   public boolean isLive(ObjectReference object) {
-    if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(GenImmix.immixSpace.inImmixDefragCollection());
+//    if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(GenImmix.immixSpace.inImmixDefragCollection());
+    if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(GenImmix.immixDramSpace.inImmixDefragCollection());
     if (object.isNull()) return false;
-    if (Space.isInSpace(GenImmix.IMMIX, object)) {
-      return GenImmix.immixSpace.isLive(object);
+//    if (Space.isInSpace(GenImmix.IMMIX, object)) {
+//      return GenImmix.immixSpace.isLive(object);
+//    }
+
+    if (Space.isInSpace(GenImmix.IMMIX_DRAM, object)) {
+      return GenImmix.immixDramSpace.isLive(object);
+    }
+    if (Space.isInSpace(GenImmix.IMMIX_NVM, object)) {
+      return GenImmix.immixNvmSpace.isLive(object);
     }
     return super.isLive(object);
   }
@@ -54,17 +62,28 @@ public final class GenImmixMatureDefragTraceLocal extends GenMatureTraceLocal{
   @Override
   @Inline
   public ObjectReference traceObject(ObjectReference object) {
-    if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(GenImmix.immixSpace.inImmixDefragCollection());
+//    if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(GenImmix.immixSpace.inImmixDefragCollection());
+    if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(GenImmix.immixDramSpace.inImmixDefragCollection());
     if (object.isNull()) return object;
-    if (Space.isInSpace(GenImmix.IMMIX, object))
-      return GenImmix.immixSpace.traceObject(this, object, GenImmix.ALLOC_MATURE_MAJORGC);
+//    if (Space.isInSpace(GenImmix.IMMIX, object))
+//      return GenImmix.immixSpace.traceObject(this, object, GenImmix.ALLOC_MATURE_MAJORGC);
+    if (Space.isInSpace(GenImmix.IMMIX_DRAM, object))
+      return GenImmix.immixDramSpace.traceObject(this, object, GenImmix.ALLOC_MATURE_MAJORGC);
+    if (Space.isInSpace(GenImmix.IMMIX_NVM, object))
+      return GenImmix.immixNvmSpace.traceObject(this, object, GenImmix.ALLOC_MATURE_MAJORGC);
     return super.traceObject(object);
   }
 
   @Override
   public boolean willNotMoveInCurrentCollection(ObjectReference object) {
-    if (Space.isInSpace(GenImmix.IMMIX, object)) {
-      return GenImmix.immixSpace.willNotMoveThisGC(object);
+//    if (Space.isInSpace(GenImmix.IMMIX, object)) {
+//      return GenImmix.immixSpace.willNotMoveThisGC(object);
+//    }
+    if (Space.isInSpace(GenImmix.IMMIX_DRAM, object)) {
+      return GenImmix.immixDramSpace.willNotMoveThisGC(object);
+    }
+    if (Space.isInSpace(GenImmix.IMMIX_NVM, object)) {
+      return GenImmix.immixNvmSpace.willNotMoveThisGC(object);
     }
     return super.willNotMoveInCurrentCollection(object);
   }
@@ -78,7 +97,13 @@ public final class GenImmixMatureDefragTraceLocal extends GenMatureTraceLocal{
       Log.writeln("]");
     }
     super.scanObject(object);
-    if (MARK_LINE_AT_SCAN_TIME && Space.isInSpace(GenImmix.IMMIX, object))
-      GenImmix.immixSpace.markLines(object);
+//    if (MARK_LINE_AT_SCAN_TIME && Space.isInSpace(GenImmix.IMMIX, object))
+//      GenImmix.immixSpace.markLines(object);
+    if (MARK_LINE_AT_SCAN_TIME) {
+      if (Space.isInSpace(GenImmix.IMMIX_DRAM, object))
+        GenImmix.immixDramSpace.markLines(object);
+      if (Space.isInSpace(GenImmix.IMMIX_NVM, object))
+        GenImmix.immixNvmSpace.markLines(object);
+    }
   }
 }

@@ -54,7 +54,9 @@ public class GenImmixMutator extends GenMutator {
    * "pretenure" objects into this space which is otherwise used
    * only by the collector)
    */
-  private final MutatorLocal mature;
+//  private final MutatorLocal mature;
+  private final MutatorLocal matureDram;
+  private final MutatorLocal matureNvm;
 
 
   /****************************************************************************
@@ -66,7 +68,9 @@ public class GenImmixMutator extends GenMutator {
    * Constructor
    */
   public GenImmixMutator() {
-    mature = new MutatorLocal(GenImmix.immixSpace, false);
+//    mature = new MutatorLocal(GenImmix.immixSpace, false);
+    matureDram = new MutatorLocal(GenImmix.immixDramSpace, false);
+    matureNvm = new MutatorLocal(GenImmix.immixNvmSpace, false);
   }
 
   /****************************************************************************
@@ -80,18 +84,26 @@ public class GenImmixMutator extends GenMutator {
   @Override
   @Inline
   public final Address alloc(int bytes, int align, int offset, int allocator, int site) {
-    if (allocator == GenImmix.ALLOC_MATURE) {
+//    if (allocator == GenImmix.ALLOC_MATURE) {
+//      if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(false); // no pretenuring yet
+//      return mature.alloc(bytes, align, offset);
+//    }
+    if (allocator == GenImmix.ALLOC_MATURE_DRAM) {
       if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(false); // no pretenuring yet
-      return mature.alloc(bytes, align, offset);
+      return matureDram.alloc(bytes, align, offset);
+    }
+    if (allocator == GenImmix.ALLOC_MATURE_NVM) {
+      if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(false); // no pretenuring yet
+      return matureNvm.alloc(bytes, align, offset);
     }
     return super.alloc(bytes, align, offset, allocator, site);
   }
 
   @Override
   @Inline
-  public final void postAlloc(ObjectReference ref, ObjectReference typeRef,
-      int bytes, int allocator) {
-    if (allocator == GenImmix.ALLOC_MATURE) {
+  public final void postAlloc(ObjectReference ref, ObjectReference typeRef, int bytes, int allocator) {
+    if (allocator == GenImmix.ALLOC_MATURE_DRAM || allocator == GenImmix.ALLOC_MATURE_NVM) {
+//    if (allocator == GenImmix.ALLOC_MATURE) {
       if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(false); // no pretenuring yet
     } else {
       super.postAlloc(ref, typeRef, bytes, allocator);
@@ -100,7 +112,9 @@ public class GenImmixMutator extends GenMutator {
 
   @Override
   public Allocator getAllocatorFromSpace(Space space) {
-    if (space == GenImmix.immixSpace) return mature;
+//    if (space == GenImmix.immixSpace) return mature;
+    if (space == GenImmix.immixDramSpace) return matureDram;
+    if (space == GenImmix.immixNvmSpace) return matureNvm;
     return super.getAllocatorFromSpace(space);
   }
 
@@ -118,12 +132,20 @@ public class GenImmixMutator extends GenMutator {
     if (global().traceFullHeap()) {
       if (phaseId == GenImmix.PREPARE) {
         super.collectionPhase(phaseId, primary);
-        if (global().gcFullHeap) mature.prepare();
+        if (global().gcFullHeap) {
+//          mature.prepare();
+          matureDram.prepare();
+          matureNvm.prepare();
+        }
         return;
       }
 
       if (phaseId == GenImmix.RELEASE) {
-        if (global().gcFullHeap) mature.release();
+        if (global().gcFullHeap) {
+//          mature.release();
+          matureDram.release();
+          matureNvm.release();
+        }
         super.collectionPhase(phaseId, primary);
         return;
       }

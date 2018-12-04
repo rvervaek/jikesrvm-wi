@@ -75,6 +75,8 @@ public abstract class Plan {
 
   /* Allocator Constants */
   public static final int ALLOC_DEFAULT = 0;
+  public static final int ALLOC_DRAM = 9;
+  public static final int ALLOC_NVM = ALLOC_DEFAULT;
   public static final int ALLOC_NON_REFERENCE = 1;
   public static final int ALLOC_NON_MOVING = 2;
   public static final int ALLOC_IMMORTAL = 3;
@@ -86,7 +88,7 @@ public abstract class Plan {
   public static final int ALLOC_HOT_CODE = USE_CODE_SPACE ? ALLOC_CODE : ALLOC_DEFAULT;
   public static final int ALLOC_COLD_CODE = USE_CODE_SPACE ? ALLOC_CODE : ALLOC_DEFAULT;
   public static final int ALLOC_STACK = ALLOC_LOS;
-  public static final int ALLOCATORS = 9;
+  public static final int ALLOCATORS = 10;
   public static final int DEFAULT_SITE = -1;
 
   /* Miscellaneous Constants */

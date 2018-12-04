@@ -43,8 +43,14 @@ public final class GenImmixMatureTraceLocal extends GenMatureTraceLocal{
   public ObjectReference traceObject(ObjectReference object) {
     if (object.isNull()) return object;
 
-    if (Space.isInSpace(GenImmix.IMMIX, object)) {
-      return GenImmix.immixSpace.fastTraceObject(this, object);
+//    if (Space.isInSpace(GenImmix.IMMIX, object)) {
+//      return GenImmix.immixSpace.fastTraceObject(this, object);
+//    }
+    if (Space.isInSpace(GenImmix.IMMIX_DRAM, object)) {
+      return GenImmix.immixDramSpace.fastTraceObject(this, object);
+    }
+    if (Space.isInSpace(GenImmix.IMMIX_NVM, object)) {
+      return GenImmix.immixNvmSpace.fastTraceObject(this, object);
     }
     return super.traceObject(object);
   }
@@ -52,15 +58,24 @@ public final class GenImmixMatureTraceLocal extends GenMatureTraceLocal{
   @Override
   public boolean isLive(ObjectReference object) {
     if (object.isNull()) return false;
-    if (Space.isInSpace(GenImmix.IMMIX, object)) {
-      return GenImmix.immixSpace.isLive(object);
+//    if (Space.isInSpace(GenImmix.IMMIX, object)) {
+//      return GenImmix.immixSpace.isLive(object);
+//    }
+    if (Space.isInSpace(GenImmix.IMMIX_DRAM, object)) {
+      return GenImmix.immixDramSpace.isLive(object);
+    }
+    if (Space.isInSpace(GenImmix.IMMIX_NVM, object)) {
+      return GenImmix.immixNvmSpace.isLive(object);
     }
     return super.isLive(object);
   }
 
   @Override
   public boolean willNotMoveInCurrentCollection(ObjectReference object) {
-    if (Space.isInSpace(GenImmix.IMMIX, object)) {
+//    if (Space.isInSpace(GenImmix.IMMIX, object)) {
+//      return true;
+//    }
+    if (Space.isInSpace(GenImmix.IMMIX_DRAM, object) || Space.isInSpace(GenImmix.IMMIX_NVM, object)) {
       return true;
     }
     return super.willNotMoveInCurrentCollection(object);
@@ -70,7 +85,13 @@ public final class GenImmixMatureTraceLocal extends GenMatureTraceLocal{
   @Override
   protected void scanObject(ObjectReference object) {
     super.scanObject(object);
-    if (MARK_LINE_AT_SCAN_TIME && Space.isInSpace(GenImmix.IMMIX, object))
-      GenImmix.immixSpace.markLines(object);
+//    if (MARK_LINE_AT_SCAN_TIME && Space.isInSpace(GenImmix.IMMIX, object))
+//      GenImmix.immixSpace.markLines(object);
+    if (MARK_LINE_AT_SCAN_TIME) {
+      if (Space.isInSpace(GenImmix.IMMIX_DRAM, object))
+        GenImmix.immixDramSpace.markLines(object);
+      if (Space.isInSpace(GenImmix.IMMIX_NVM, object))
+        GenImmix.immixNvmSpace.markLines(object);
+    }
   }
 }

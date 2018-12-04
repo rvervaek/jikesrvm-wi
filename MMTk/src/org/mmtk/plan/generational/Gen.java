@@ -73,10 +73,14 @@ public abstract class Gen extends StopTheWorld {
   static final boolean USE_DISCONTIGUOUS_NURSERY = false;
 
   // Allocators
-  public static final int ALLOC_NURSERY        = ALLOC_DEFAULT;
+//  public static final int ALLOC_NURSERY        = ALLOC_DEFAULT;
+  public static final int ALLOC_NURSERY        = ALLOC_DRAM;  // Nursery should alsways be in DRAM
   public static final int ALLOC_MATURE         = StopTheWorld.ALLOCATORS + 1;
   public static final int ALLOC_MATURE_MINORGC = StopTheWorld.ALLOCATORS + 2;
   public static final int ALLOC_MATURE_MAJORGC = StopTheWorld.ALLOCATORS + 3;
+
+  public static final int ALLOC_MATURE_DRAM    = StopTheWorld.ALLOCATORS + 4;
+  public static final int ALLOC_MATURE_NVM     = StopTheWorld.ALLOCATORS + 5;
 
   public static final int SCAN_NURSERY = 0;
   public static final int SCAN_MATURE  = 1;

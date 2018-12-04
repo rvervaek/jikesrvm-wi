@@ -57,9 +57,13 @@ public class GenImmix extends Gen {
    */
 
   /** The mature space, which for GenImmix uses a mark sweep collection policy. */
-  public static final ImmixSpace immixSpace = new ImmixSpace("immix", false, VMRequest.discontiguous());
+//  public static final ImmixSpace immixSpace = new ImmixSpace("immix", false, VMRequest.discontiguous());
+  public static final ImmixSpace immixDramSpace = new ImmixSpace("immixDram", false, VMRequest.discontiguous());
+  public static final ImmixSpace immixNvmSpace = new ImmixSpace("immixNvm", false, VMRequest.discontiguous());
 
-  public static final int IMMIX = immixSpace.getDescriptor();
+//  public static final int IMMIX = immixSpace.getDescriptor();
+  public static final int IMMIX_DRAM = immixDramSpace.getDescriptor();
+  public static final int IMMIX_NVM = immixNvmSpace.getDescriptor();
 
   /** Specialized scanning method identifier */
   public static final int SCAN_IMMIX = 1;
@@ -71,7 +75,8 @@ public class GenImmix extends Gen {
 
   /** The trace class for a full-heap collection */
   public final Trace matureTrace = new Trace(metaDataSpace);
-  private boolean lastGCWasDefrag = false;
+  private boolean lastGCWasDefragDram = false;
+  private boolean lastGCWasDefragNvm = false;
 
   /*****************************************************************************
    *
@@ -87,7 +92,9 @@ public class GenImmix extends Gen {
     if (phaseId == SET_COLLECTION_KIND) {
       super.collectionPhase(phaseId);
       if (gcFullHeap) {
-        immixSpace.decideWhetherToDefrag(emergencyCollection, true, collectionAttempt, userTriggeredCollection);
+//        immixSpace.decideWhetherToDefrag(emergencyCollection, true, collectionAttempt, userTriggeredCollection);
+        immixDramSpace.decideWhetherToDefrag(emergencyCollection, true, collectionAttempt, userTriggeredCollection);
+        immixNvmSpace.decideWhetherToDefrag(emergencyCollection, true, collectionAttempt, userTriggeredCollection);
       }
       return;
     }
@@ -96,7 +103,9 @@ public class GenImmix extends Gen {
       if (phaseId == PREPARE) {
         super.collectionPhase(phaseId);
         matureTrace.prepare();
-        immixSpace.prepare(true);
+//        immixSpace.prepare(true);
+        immixDramSpace.prepare(true);
+        immixNvmSpace.prepare(true);
         return;
       }
 
@@ -107,19 +116,23 @@ public class GenImmix extends Gen {
 
       if (phaseId == RELEASE) {
         matureTrace.release();
-        lastGCWasDefrag = immixSpace.release(true);
+//        lastGCWasDefrag = immixSpace.release(true);
+        lastGCWasDefragDram = immixDramSpace.release(true);
+        lastGCWasDefragNvm = immixNvmSpace.release(true);
         super.collectionPhase(phaseId);
         return;
       }
-    } else
-      lastGCWasDefrag = false;
+    } else {
+      lastGCWasDefragDram = false;
+      lastGCWasDefragNvm = false;
+    }
 
     super.collectionPhase(phaseId);
   }
 
   @Override
   public boolean lastCollectionWasExhaustive() {
-    return lastGCWasDefrag;
+    return lastGCWasDefragDram || lastGCWasDefragNvm;
   }
 
   /*****************************************************************************
@@ -134,17 +147,19 @@ public class GenImmix extends Gen {
   @Inline
   @Override
   public int getPagesUsed() {
-    return immixSpace.reservedPages() + super.getPagesUsed();
+//    return immixSpace.reservedPages() + super.getPagesUsed();
+    return immixDramSpace.reservedPages() + immixNvmSpace.reservedPages() + super.getPagesUsed();
   }
 
   @Override
   public int getMaturePhysicalPagesAvail() {
-    return immixSpace.availablePhysicalPages();
+    return immixDramSpace.availablePhysicalPages() + immixNvmSpace.availablePhysicalPages();
   }
 
   @Override
   public int getCollectionReserve() {
-    return super.getCollectionReserve() + immixSpace.defragHeadroomPages();
+//    return super.getCollectionReserve() + immixSpace.defragHeadroomPages();
+    return super.getCollectionReserve() + immixDramSpace.defragHeadroomPages() + immixNvmSpace.defragHeadroomPages();
   }
 
   /*****************************************************************************
@@ -158,12 +173,13 @@ public class GenImmix extends Gen {
   @Override
   @Inline
   protected final Space activeMatureSpace() {
-    return immixSpace;
+    return immixDramSpace; // method is never called, so no worries :)
   }
 
   @Override
   public boolean willNeverMove(ObjectReference object) {
-    if (Space.isInSpace(IMMIX, object)) {
+    if (Space.isInSpace(IMMIX_DRAM, object) || Space.isInSpace(IMMIX_NVM, object)) {
+//    if (Space.isInSpace(IMMIX, object)) {
       ObjectHeader.pinObject(object);
       return true;
     } else
@@ -181,6 +197,8 @@ public class GenImmix extends Gen {
   @Override
   @Interruptible
   public void preCollectorSpawn() {
-    immixSpace.initializeDefrag();
+//    immixSpace.initializeDefrag();
+    immixDramSpace.initializeDefrag();
+    immixNvmSpace.initializeDefrag();
   }
 }
