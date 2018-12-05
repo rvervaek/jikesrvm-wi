@@ -86,9 +86,17 @@ public class GenImmixCollector extends GenCollector {
     if (Stats.GATHER_MARK_CONS_STATS) {
       if (Space.isInSpace(GenImmix.NURSERY, original)) GenImmix.nurseryMark.inc(bytes);
     }
-    if (allocator == Plan.ALLOC_LOS) {
-      if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(Allocator.getMaximumAlignedSize(bytes, align) > Plan.MAX_NON_LOS_COPY_BYTES);
-      return los.alloc(bytes, align, offset);
+//    if (allocator == Plan.ALLOC_LOS) {
+//      if (VM.VERIFY_ASSERTIONS) VM.assertions._assert(Allocator.getMaximumAlignedSize(bytes, align) > Plan.MAX_NON_LOS_COPY_BYTES);
+//      return los.alloc(bytes, align, offset);
+    if (allocator == Plan.ALLOC_LOS_DRAM) {
+      if (VM.VERIFY_ASSERTIONS)
+        VM.assertions._assert(Allocator.getMaximumAlignedSize(bytes, align) > Plan.MAX_NON_LOS_COPY_BYTES);
+      return losDram.alloc(bytes, align, offset);
+    } else if (allocator == Plan.ALLOC_LOS_NVM) {
+      if (VM.VERIFY_ASSERTIONS)
+        VM.assertions._assert(Allocator.getMaximumAlignedSize(bytes, align) > Plan.MAX_NON_LOS_COPY_BYTES);
+      return losNvm.alloc(bytes, align, offset);
     } else {
       if (VM.VERIFY_ASSERTIONS) {
         VM.assertions._assert(bytes <= Plan.MAX_NON_LOS_COPY_BYTES);
@@ -120,9 +128,13 @@ public class GenImmixCollector extends GenCollector {
   @Override
   @Inline
   public final void postCopy(ObjectReference object, ObjectReference typeRef, int bytes, int allocator) {
-    if (allocator == Plan.ALLOC_LOS)
-      Plan.loSpace.initializeHeader(object, false);
-    else {
+//    if (allocator == Plan.ALLOC_LOS)
+//      Plan.loSpace.initializeHeader(object, false);
+    if (allocator == Plan.ALLOC_LOS_DRAM) {
+      Plan.loDramSpace.initializeHeader(object, false);
+    } else if (allocator == Plan.ALLOC_LOS_NVM) {
+      Plan.loNvmSpace.initializeHeader(object, false);
+    } else {
 //      if (VM.VERIFY_ASSERTIONS) {
 //        VM.assertions._assert((!GenImmix.immixSpace.inImmixCollection() && allocator == GenImmix.ALLOC_MATURE_MINORGC) ||
 //            (GenImmix.immixSpace.inImmixCollection() && allocator == GenImmix.ALLOC_MATURE_MAJORGC));

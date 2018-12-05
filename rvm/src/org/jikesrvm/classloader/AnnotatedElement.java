@@ -364,4 +364,19 @@ public abstract class AnnotatedElement implements java.lang.reflect.AnnotatedEle
   public final boolean hasNonMovingAllocationAnnotation() {
     return isAnnotationDeclared(TypeReference.NonMovingAllocation);
   }
+
+  /**
+   * @return {@code true} if this element has a WriteIntensive annotation.
+   * @see org.vmmagic.pragma.WriteIntensive
+   */
+  public final boolean hasWriteIntensiveAnnotation() {
+    return isAnnotationDeclared(TypeReference.WriteIntensive);
+//    Annotation[] declaredAnnotations = getDeclaredAnnotations();
+//    for (Annotation annotation : declaredAnnotations) {
+//      if (annotation.annotationType().getName().equals("org.java.pragma.WriteIntensive")) {
+//        return true;
+//      }
+//    }
+//    return false;
+  }
 }

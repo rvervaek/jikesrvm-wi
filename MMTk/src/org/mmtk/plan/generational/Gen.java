@@ -109,6 +109,15 @@ public abstract class Gen extends StopTheWorld {
   public static final int NURSERY = nurserySpace.getDescriptor();
   private static final Address NURSERY_START = nurserySpace.getStart();
 
+
+
+//  /*residency statistics -- post-collection*/
+//  public static long pagesDramPost    = 0;
+//  public static long pagesNvmPost     = 0;
+//  /*residency statistics -- pre-collection*/
+//  public static long pagesDramPre    = 0;
+//  public static long pagesNvmPre     = 0;
+
   /*****************************************************************************
    *
    * Instance fields

@@ -81,6 +81,8 @@ public abstract class Plan {
   public static final int ALLOC_NON_MOVING = 2;
   public static final int ALLOC_IMMORTAL = 3;
   public static final int ALLOC_LOS = 4;
+  public static final int ALLOC_LOS_DRAM = 10;
+  public static final int ALLOC_LOS_NVM = ALLOC_LOS;
   public static final int ALLOC_PRIMITIVE_LOS = 5;
   public static final int ALLOC_GCSPY = 6;
   public static final int ALLOC_CODE = 7;
@@ -88,7 +90,7 @@ public abstract class Plan {
   public static final int ALLOC_HOT_CODE = USE_CODE_SPACE ? ALLOC_CODE : ALLOC_DEFAULT;
   public static final int ALLOC_COLD_CODE = USE_CODE_SPACE ? ALLOC_CODE : ALLOC_DEFAULT;
   public static final int ALLOC_STACK = ALLOC_LOS;
-  public static final int ALLOCATORS = 10;
+  public static final int ALLOCATORS = 11;
   public static final int DEFAULT_SITE = -1;
 
   /* Miscellaneous Constants */
@@ -116,9 +118,11 @@ public abstract class Plan {
   public static final RawPageSpace metaDataSpace = new RawPageSpace("meta", VMRequest.discontiguous());
 
   /** Large objects are allocated into a special large object space. */
-  public static final LargeObjectSpace loSpace = new LargeObjectSpace("los", VMRequest.discontiguous());
+  public static final LargeObjectSpace loDramSpace = new LargeObjectSpace("losDram", VMRequest.discontiguous());
+  public static final LargeObjectSpace loNvmSpace = new LargeObjectSpace("losNvm", VMRequest.discontiguous());
+  public static final LargeObjectSpace loSpace = loNvmSpace;
 
-  /** Space used by the sanity checker (used at runtime only if sanity checking enabled */
+    /** Space used by the sanity checker (used at runtime only if sanity checking enabled */
   public static final RawPageSpace sanitySpace = new RawPageSpace("sanity", VMRequest.discontiguous());
 
   /** Space used to allocate objects that cannot be moved. we do not need a large space as the LOS is non-moving. */
@@ -133,7 +137,9 @@ public abstract class Plan {
   public static final int IMMORTAL = immortalSpace.getDescriptor();
   public static final int VM_SPACE = vmSpace.getDescriptor();
   public static final int META = metaDataSpace.getDescriptor();
-  public static final int LOS = loSpace.getDescriptor();
+  public static final int LOS_DRAM = loDramSpace.getDescriptor();
+  public static final int LOS_NVM = loNvmSpace.getDescriptor();
+  public static final int LOS = LOS_NVM;
   public static final int SANITY = sanitySpace.getDescriptor();
   public static final int NON_MOVING = nonMovingSpace.getDescriptor();
   public static final int SMALL_CODE = USE_CODE_SPACE ? smallCodeSpace.getDescriptor() : 0;
@@ -647,7 +653,8 @@ public abstract class Plan {
   /**
    * Print out statistics at the end of a GC
    */
-  public final void printPostStats() {
+//  public final void printPostStats() {
+  public void printPostStats() {
     if ((Options.verbose.getValue() == 1) ||
         (Options.verbose.getValue() == 2)) {
       Log.write("-> ");
@@ -918,8 +925,10 @@ public abstract class Plan {
    * allocation, excluding space reserved for copying.
    */
   public int getPagesUsed() {
-    return loSpace.reservedPages() + immortalSpace.reservedPages() +
-      metaDataSpace.reservedPages() + nonMovingSpace.reservedPages();
+//    return loSpace.reservedPages() + immortalSpace.reservedPages() +
+//      metaDataSpace.reservedPages() + nonMovingSpace.reservedPages();
+      return loDramSpace.reservedPages() + loNvmSpace.reservedPages() + immortalSpace.reservedPages() +
+              metaDataSpace.reservedPages() + nonMovingSpace.reservedPages();
   }
 
   /****************************************************************************
@@ -1047,7 +1056,11 @@ public abstract class Plan {
   public boolean willNeverMove(ObjectReference object) {
     if (!VM.activePlan.constraints().movesObjects())
       return true;
-    if (Space.isInSpace(LOS, object))
+//    if (Space.isInSpace(LOS, object))
+//      return true;
+    if (Space.isInSpace(LOS_DRAM, object))
+      return true;
+    if (Space.isInSpace(LOS_NVM, object))
       return true;
     if (Space.isInSpace(IMMORTAL, object))
       return true;

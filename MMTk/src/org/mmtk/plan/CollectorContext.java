@@ -12,6 +12,7 @@
  */
 package org.mmtk.plan;
 
+import org.mmtk.policy.immix.ObjectHeader;
 import org.mmtk.utility.alloc.Allocator;
 import org.mmtk.utility.Log;
 
@@ -139,7 +140,8 @@ public abstract class CollectorContext {
   @Inline
   public int copyCheckAllocator(ObjectReference from, int bytes, int align, int allocator) {
     boolean large = Allocator.getMaximumAlignedSize(bytes, align) > Plan.MAX_NON_LOS_COPY_BYTES;
-    return large ? Plan.ALLOC_LOS : allocator;
+    int losAllocator = ObjectHeader.isWriteIntensiveObject(from) ? Plan.ALLOC_LOS_DRAM : Plan.ALLOC_LOS_NVM;
+    return large ? losAllocator : allocator;
   }
 
   /****************************************************************************

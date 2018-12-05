@@ -64,8 +64,10 @@ public class Entrypoints {
       getMethod(org.jikesrvm.runtime.RuntimeEntrypoints.class,
                 "resolvedNewScalar",
                 "(ILorg/jikesrvm/objectmodel/TIB;ZIIII)Ljava/lang/Object;");
+//  public static final NormalMethod unresolvedNewScalarMethod =
+//      getMethod(org.jikesrvm.runtime.RuntimeEntrypoints.class, "unresolvedNewScalar", "(II)Ljava/lang/Object;");
   public static final NormalMethod unresolvedNewScalarMethod =
-      getMethod(org.jikesrvm.runtime.RuntimeEntrypoints.class, "unresolvedNewScalar", "(II)Ljava/lang/Object;");
+          getMethod(org.jikesrvm.runtime.RuntimeEntrypoints.class, "unresolvedNewScalar", "(IIZ)Ljava/lang/Object;");
   public static final NormalMethod unresolvedNewArrayMethod =
       getMethod(org.jikesrvm.runtime.RuntimeEntrypoints.class, "unresolvedNewArray", "(III)Ljava/lang/Object;");
   public static final NormalMethod resolvedNewArrayMethod =

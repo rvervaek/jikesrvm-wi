@@ -196,13 +196,24 @@ public final class ExpandRuntimeServices extends CompilerPhase {
           int typeRefId = New.getType(inst).getTypeRef().getId();
           RVMMethod target = Entrypoints.unresolvedNewScalarMethod;
           IntConstantOperand site = IRTools.IC(MemoryManager.getAllocationSite(true));
-          Call.mutate2(inst,
-                       CALL,
-                       New.getClearResult(inst),
-                       IRTools.AC(target.getOffset()),
-                       MethodOperand.STATIC(target),
-                       IRTools.IC(typeRefId),
-                       site);
+          IntConstantOperand writeIntensive = IRTools.IC((inst.position() != null &&
+                  inst.position().getMethod() != null &&
+                  inst.position().getMethod().isWriteIntensive()) ? 1 : 0);
+//          Call.mutate2(inst,
+//                       CALL,
+//                       New.getClearResult(inst),
+//                       IRTools.AC(target.getOffset()),
+//                       MethodOperand.STATIC(target),
+//                       IRTools.IC(typeRefId),
+//                       site);
+          Call.mutate3(inst,
+                  CALL,
+                  New.getClearResult(inst),
+                  IRTools.AC(target.getOffset()),
+                  MethodOperand.STATIC(target),
+                  IRTools.IC(typeRefId),
+                  site,
+                  writeIntensive);
         }
         break;
 

@@ -582,6 +582,14 @@ public abstract class RVMMethod extends RVMMember {
     return hasNonMovingAllocationAnnotation();
   }
 
+  /**
+   * @return {@code true} if all objects allocated from this method will be write-intensive
+   * @see org.vmmagic.pragma.WriteIntensive
+   */
+  public boolean isWriteIntensive() {
+    return hasWriteIntensiveAnnotation();
+  }
+
   //------------------------------------------------------------------//
   //                        Section 2.                                //
   // The following are available after the declaring class has been   //

@@ -401,6 +401,32 @@ public final class MemoryManager {
    */
   @Interruptible
   public static int pickAllocator(RVMType type, RVMMethod method) {
+    return pickAllocator(type, method, false);
+  }
+
+  /**
+   * Returns the appropriate allocation scheme/area for the given type.
+   *
+   * @param type the type of the object to be allocated
+   * @param writeIntensive true if the type will be write-intensive
+   * @return the identifier of the appropriate allocator
+   */
+  @Interruptible
+  public static int pickAllocator(RVMType type, boolean writeIntensive) {
+    return pickAllocator(type, null, writeIntensive);
+  }
+
+  /**
+   * Returns the appropriate allocation scheme/area for the given type
+   * and given method requesting the allocation.
+   *
+   * @param type the type of the object to be allocated
+   * @param method the method requesting the allocation
+   * @param writeIntensive true if the type will be write-intensive
+   * @return the identifier of the appropriate allocator
+   */
+  @Interruptible
+  public static int pickAllocator(RVMType type, RVMMethod method, boolean writeIntensive) {
     if (traceAllocator) {
       VM.sysWrite("allocator for ");
       VM.sysWrite(type.getDescriptor());
@@ -432,6 +458,21 @@ public final class MemoryManager {
       }
       if (method.isNonMovingAllocation()) {
         return Plan.ALLOC_NON_MOVING;
+      }
+      if (writeIntensive || method.isWriteIntensive()) {
+        if (traceAllocator) {
+          VM.sysWriteln("DRAM");
+          VM.sysWriteln("method = [" + method.isWriteIntensive() + "], writeIntensive = [" + writeIntensive + "]");
+        }
+        return Plan.ALLOC_DRAM;
+      }
+    } else {
+      if (writeIntensive) {
+        if (traceAllocator) {
+          VM.sysWriteln("DRAM");
+          VM.sysWriteln("method = [" + method + "], writeIntensive = [" + writeIntensive + "]");
+        }
+        return Plan.ALLOC_DRAM;
       }
     }
     if (traceAllocator) {

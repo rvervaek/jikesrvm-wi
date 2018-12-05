@@ -46,6 +46,8 @@ import org.vmmagic.pragma.*;
   protected final GenNurseryTraceLocal nurseryTrace;
 
   protected final LargeObjectLocal los;
+  protected final LargeObjectLocal losDram;
+  protected final LargeObjectLocal losNvm;
 
   // remembered set consumers
   protected final ObjectReferenceDeque modbuf;
@@ -66,7 +68,9 @@ import org.vmmagic.pragma.*;
    * @see GenMutator
    */
   public GenCollector() {
-    los = new LargeObjectLocal(Plan.loSpace);
+    losDram = new LargeObjectLocal(Plan.loDramSpace);
+    losNvm = new LargeObjectLocal(Plan.loNvmSpace);
+    los = losNvm;
     arrayRemset = new AddressPairDeque(global().arrayRemsetPool);
     remset = new AddressDeque("remset", global().remsetPool);
     modbuf = new ObjectReferenceDeque("modbuf", global().modbufPool);
@@ -86,7 +90,9 @@ import org.vmmagic.pragma.*;
   public void collectionPhase(short phaseId, boolean primary) {
 
     if (phaseId == Gen.PREPARE) {
-      los.prepare(true);
+//      los.prepare(true);
+      losDram.prepare(true);
+      losNvm.prepare(true);
       global().arrayRemsetPool.prepareNonBlocking();
       global().remsetPool.prepareNonBlocking();
       global().modbufPool.prepareNonBlocking();
@@ -116,7 +122,9 @@ import org.vmmagic.pragma.*;
     }
 
     if (phaseId == Gen.RELEASE) {
-      los.release(true);
+//      los.release(true);
+      losDram.release(true);
+      losNvm.release(true);
       if (!global().traceFullHeap()) {
         nurseryTrace.release();
         global().arrayRemsetPool.reset();

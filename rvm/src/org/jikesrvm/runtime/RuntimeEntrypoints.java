@@ -259,7 +259,7 @@ public class RuntimeEntrypoints {
    * See also: bytecode 0xbb ("new")
    */
   @Entrypoint
-  static Object unresolvedNewScalar(int id, int site) throws NoClassDefFoundError, OutOfMemoryError {
+  static Object unresolvedNewScalar(int id, int site, boolean isWriteIntensive) throws NoClassDefFoundError, OutOfMemoryError {
     TypeReference tRef = TypeReference.getTypeRef(id);
     RVMType t = tRef.peekType();
     if (t == null) {
@@ -270,7 +270,8 @@ public class RuntimeEntrypoints {
       initializeClassForDynamicLink(cls);
     }
 
-    int allocator = MemoryManager.pickAllocator(cls);
+//    int allocator = MemoryManager.pickAllocator(cls);
+    int allocator = MemoryManager.pickAllocator(cls, isWriteIntensive);
     int align = ObjectModel.getAlignment(cls);
     int offset = ObjectModel.getOffsetForAlignment(cls, false);
     return resolvedNewScalar(cls.getInstanceSize(),

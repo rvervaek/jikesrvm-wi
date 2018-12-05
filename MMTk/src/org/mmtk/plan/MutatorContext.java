@@ -114,7 +114,9 @@ public abstract class MutatorContext {
   protected final BumpPointer immortal = new ImmortalLocal(Plan.immortalSpace);
 
   /** Per-mutator allocator into the large object space */
-  protected final LargeObjectLocal los = new LargeObjectLocal(Plan.loSpace);
+  protected final LargeObjectLocal losDram = new LargeObjectLocal(Plan.loDramSpace);
+  protected final LargeObjectLocal losNvm = new LargeObjectLocal(Plan.loNvmSpace);
+  protected final LargeObjectLocal los = losNvm;
 
   /** Per-mutator allocator into the small code space */
   protected final MarkSweepLocal smcode = Plan.USE_CODE_SPACE ? new MarkSweepLocal(Plan.smallCodeSpace) : null;
@@ -160,8 +162,15 @@ public abstract class MutatorContext {
   @Inline
   public int checkAllocator(int bytes, int align, int allocator) {
     int maxBytes = Allocator.getMaximumAlignedSize(bytes, align);
-    if (allocator == Plan.ALLOC_DEFAULT) {
-      return (maxBytes > Plan.MAX_NON_LOS_DEFAULT_ALLOC_BYTES || (maxBytes > Plan.MAX_NON_LOS_COPY_BYTES && maxBytes > Plan.pretenureThreshold)) ? Plan.ALLOC_LOS : Plan.ALLOC_DEFAULT;
+//    if (allocator == Plan.ALLOC_DEFAULT) {
+//      return (maxBytes > Plan.MAX_NON_LOS_DEFAULT_ALLOC_BYTES || (maxBytes > Plan.MAX_NON_LOS_COPY_BYTES && maxBytes > Plan.pretenureThreshold)) ? Plan.ALLOC_LOS : Plan.ALLOC_DEFAULT;
+//    }
+
+    if (allocator == Plan.ALLOC_DRAM) {
+      return (maxBytes > Plan.MAX_NON_LOS_DEFAULT_ALLOC_BYTES || (maxBytes > Plan.MAX_NON_LOS_COPY_BYTES && maxBytes > Plan.pretenureThreshold)) ? Plan.ALLOC_LOS_DRAM : Plan.ALLOC_DRAM;
+    }
+    if (allocator == Plan.ALLOC_NVM) {
+      return (maxBytes > Plan.MAX_NON_LOS_DEFAULT_ALLOC_BYTES || (maxBytes > Plan.MAX_NON_LOS_COPY_BYTES && maxBytes > Plan.pretenureThreshold)) ? Plan.ALLOC_LOS_NVM : Plan.ALLOC_NVM;
     }
 
     if (Plan.USE_CODE_SPACE && allocator == Plan.ALLOC_CODE) {
@@ -192,7 +201,9 @@ public abstract class MutatorContext {
   @Inline
   public Address alloc(int bytes, int align, int offset, int allocator, int site) {
     switch (allocator) {
-    case      Plan.ALLOC_LOS: return los.alloc(bytes, align, offset);
+//    case      Plan.ALLOC_LOS: return los.alloc(bytes, align, offset);
+    case      Plan.ALLOC_LOS_DRAM: return losDram.alloc(bytes, align, offset);
+    case      Plan.ALLOC_LOS_NVM: return losNvm.alloc(bytes, align, offset);
     case      Plan.ALLOC_IMMORTAL: return immortal.alloc(bytes, align, offset);
     case      Plan.ALLOC_CODE: return smcode.alloc(bytes, align, offset);
     case      Plan.ALLOC_LARGE_CODE: return lgcode.alloc(bytes, align, offset);
@@ -216,7 +227,9 @@ public abstract class MutatorContext {
   public void postAlloc(ObjectReference ref, ObjectReference typeRef,
       int bytes, int allocator) {
     switch (allocator) {
-    case           Plan.ALLOC_LOS: Plan.loSpace.initializeHeader(ref, true); return;
+//    case           Plan.ALLOC_LOS: Plan.loSpace.initializeHeader(ref, true); return;
+      case           Plan.ALLOC_LOS_DRAM: Plan.loDramSpace.initializeHeader(ref, true); return;
+      case           Plan.ALLOC_LOS_NVM: Plan.loNvmSpace.initializeHeader(ref, true); return;
     case      Plan.ALLOC_IMMORTAL: Plan.immortalSpace.initializeHeader(ref);  return;
     case          Plan.ALLOC_CODE: Plan.smallCodeSpace.initializeHeader(ref, true); return;
     case    Plan.ALLOC_LARGE_CODE: Plan.largeCodeSpace.initializeHeader(ref, true); return;
@@ -242,7 +255,9 @@ public abstract class MutatorContext {
    */
   public Allocator getAllocatorFromSpace(Space space) {
     if (space == Plan.immortalSpace)  return immortal;
-    if (space == Plan.loSpace)        return los;
+//    if (space == Plan.loSpace)        return los;
+    if (space == Plan.loDramSpace)        return losDram;
+    if (space == Plan.loNvmSpace)        return losNvm;
     if (space == Plan.nonMovingSpace) return nonmove;
     if (Plan.USE_CODE_SPACE && space == Plan.smallCodeSpace) return smcode;
     if (Plan.USE_CODE_SPACE && space == Plan.largeCodeSpace) return lgcode;

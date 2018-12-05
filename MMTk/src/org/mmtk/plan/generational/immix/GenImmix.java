@@ -12,13 +12,17 @@
  */
 package org.mmtk.plan.generational.immix;
 
+import org.jikesrvm.VM;
+import org.mmtk.plan.Plan;
 import org.mmtk.plan.generational.Gen;
 import org.mmtk.plan.Trace;
 import org.mmtk.plan.TransitiveClosure;
 import org.mmtk.policy.immix.ImmixSpace;
 import org.mmtk.policy.immix.ObjectHeader;
 import org.mmtk.policy.Space;
+import org.mmtk.utility.Log;
 import org.mmtk.utility.heap.VMRequest;
+import org.mmtk.utility.statistics.Stats;
 import org.vmmagic.pragma.*;
 import org.vmmagic.unboxed.*;
 
@@ -201,4 +205,50 @@ public class GenImmix extends Gen {
     immixDramSpace.initializeDefrag();
     immixNvmSpace.initializeDefrag();
   }
+
+//  @Override
+//  public void printPreStats() {
+//    if(gcFullHeap && Stats.gatheringStats()) {
+//      long current_dram_pre_old   = immixDramSpace.reservedPages();
+//      long current_nvm_pre_old    = immixNvmSpace.reservedPages();
+//      long current_dram_pre_large = Plan.loDramSpace.reservedPages();
+//      long current_nvm_pre_large = Plan.loNvmSpace.reservedPages();
+//
+//      long pagesDramPre = current_dram_pre_old + current_dram_pre_large;
+//      long pagesNvmPre =  current_nvm_pre_old + current_nvm_pre_large;
+//
+//      Log.write("------------------------ Collection ---------------------");
+//      Log.writeln("[Pre-collection ");
+//      Log.write("DRAM = ");
+//      Log.writeln(pagesDramPre);
+//      Log.write("NVM = ");
+//      Log.write(pagesNvmPre);
+//      Log.writeln("--------------------------------------------------------");
+//    }
+//    super.printPreStats();
+//  }
+//
+//  @Override
+//  public void printPostStats() {
+//    if(gcFullHeap && Stats.gatheringStats()) {
+//      long current_dram_post_old   = immixDramSpace.reservedPages();
+//      long current_nvm_post_old    = immixNvmSpace.reservedPages();
+//      long current_dram_post_large = Plan.loDramSpace.reservedPages();
+//      long current_nvm_post_large = Plan.loNvmSpace.reservedPages();
+//
+//      long pagesDramPost = current_dram_post_old + current_dram_post_large;
+//      long pagesNvmPost =  current_nvm_post_old + current_nvm_post_large;
+//
+//      Log.write("------------------------ Collection ---------------------");
+//      Log.write("[Post-collection ");
+//      Log.write("DRAM = ");
+//      Log.write(pagesDramPost);
+//      Log.write("NVM = ");
+//      Log.write(pagesNvmPost);
+//      Log.writeln("--------------------------------------------------------");
+//    }
+//    super.printPostStats();
+//  }
+
+
 }

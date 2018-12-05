@@ -3138,9 +3138,12 @@ public final class BaselineCompilerImpl extends BaselineCompiler {
   @Override
   protected void emit_unresolved_new(TypeReference typeRef) {
     int site = MemoryManager.getAllocationSite(true);
+    int writeInstensive = (method != null && method.isWriteIntensive()) ? 1 : 0;
     asm.emitPUSH_Imm(typeRef.getId());
-    asm.emitPUSH_Imm(site);            // site
-    genParameterRegisterLoad(asm, 2);  // pass 2 parameter words
+    asm.emitPUSH_Imm(site);                // site
+    asm.emitPUSH_Imm(writeInstensive);     // writeintensive
+//    genParameterRegisterLoad(asm, 2);  // pass 2 parameter words
+    genParameterRegisterLoad(asm, 3);  // pass 3 parameter words
     asm.generateJTOCcall(Entrypoints.unresolvedNewScalarMethod.getOffset());
     asm.emitPUSH_Reg(T0);
   }

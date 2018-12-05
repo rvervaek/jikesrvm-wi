@@ -218,8 +218,12 @@ public abstract class TraceLocal extends TransitiveClosure {
   @Inline
   public boolean isLive(ObjectReference object) {
     Space space = Space.getSpaceForObject(object);
-    if (space == Plan.loSpace)
-      return Plan.loSpace.isLive(object);
+//    if (space == Plan.loSpace)
+//      return Plan.loSpace.isLive(object);
+    if (space == Plan.loDramSpace)
+      return Plan.loDramSpace.isLive(object);
+    else if (space == Plan.loNvmSpace)
+      return Plan.loNvmSpace.isLive(object);
     else if (space == Plan.nonMovingSpace)
       return Plan.nonMovingSpace.isLive(object);
     else if (Plan.USE_CODE_SPACE && space == Plan.smallCodeSpace)
@@ -275,8 +279,12 @@ public abstract class TraceLocal extends TransitiveClosure {
       return (Plan.SCAN_BOOT_IMAGE) ? object : Plan.vmSpace.traceObject(this, object);
     if (Space.isInSpace(Plan.IMMORTAL, object))
       return Plan.immortalSpace.traceObject(this, object);
-    if (Space.isInSpace(Plan.LOS, object))
-      return Plan.loSpace.traceObject(this, object);
+//    if (Space.isInSpace(Plan.LOS, object))
+//      return Plan.loSpace.traceObject(this, object);
+    if (Space.isInSpace(Plan.LOS_DRAM, object))
+      return Plan.loDramSpace.traceObject(this, object);
+    if (Space.isInSpace(Plan.LOS_NVM, object))
+      return Plan.loNvmSpace.traceObject(this, object);
     if (Space.isInSpace(Plan.NON_MOVING, object))
       return Plan.nonMovingSpace.traceObject(this, object);
     if (Plan.USE_CODE_SPACE && Space.isInSpace(Plan.SMALL_CODE, object))
@@ -319,7 +327,11 @@ public abstract class TraceLocal extends TransitiveClosure {
   public boolean willNotMoveInCurrentCollection(ObjectReference object) {
     if (!VM.activePlan.constraints().movesObjects())
       return true;
-    if (Space.isInSpace(Plan.LOS, object))
+//    if (Space.isInSpace(Plan.LOS, object))
+//      return true;
+    if (Space.isInSpace(Plan.LOS_DRAM, object))
+      return true;
+    if (Space.isInSpace(Plan.LOS_NVM, object))
       return true;
     if (Space.isInSpace(Plan.IMMORTAL, object))
       return true;

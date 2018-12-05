@@ -211,7 +211,9 @@ public abstract class Simple extends Plan {
     }
 
     if (phaseId == PREPARE) {
-      loSpace.prepare(true);
+//      loSpace.prepare(true);
+      loDramSpace.prepare(true);
+      loNvmSpace.prepare(true);
       nonMovingSpace.prepare(true);
       if (USE_CODE_SPACE) {
         smallCodeSpace.prepare(true);
@@ -235,7 +237,9 @@ public abstract class Simple extends Plan {
     }
 
     if (phaseId == RELEASE) {
-      loSpace.release(true);
+//      loSpace.release(true);
+      loDramSpace.release(true);
+      loNvmSpace.release(true);
       nonMovingSpace.release();
       if (USE_CODE_SPACE) {
         smallCodeSpace.release();
